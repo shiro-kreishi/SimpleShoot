@@ -10,41 +10,41 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce;
     public float jumpCooldown;
     public float airMultiplier;
-    private bool readyToJump = true;
+    private bool _readyToJump = true;
 
     [Header("Keybinds")] public KeyCode jumpKey = KeyCode.Space;
     
     [Header("Ground Check")] 
     public float playerHeight;
     public LayerMask whatIsGround;
-    private bool grounded;
+    private bool _grounded;
     
-    private float horizontalInput;
-    private float verticalInput;
+    private float _horizontalInput;
+    private float _verticalInput;
 
-    private Vector3 moveDirection;
+    private Vector3 _moveDirection;
 
-    private Rigidbody rb;
+    private Rigidbody _rb;
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
+        _rb = GetComponent<Rigidbody>();
+        _rb.freezeRotation = true;
     }
 
     private void Update()
     {
-        grounded = Physics.Raycast(
+        _grounded = Physics.Raycast(
             transform.position, Vector3.down,
             playerHeight * 0.5f + 0.2f, whatIsGround
             );
         MyInput();
         SpeedControl();
         
-        if (grounded)
-            rb.drag = groundDrag;
+        if (_grounded)
+            _rb.drag = groundDrag;
         else
-            rb.drag = 0;
+            _rb.drag = 0;
     }
 
     private void FixedUpdate()
@@ -54,15 +54,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void MyInput()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
-        Debug.Log(Input.GetKey(jumpKey) && readyToJump && grounded);
+        _horizontalInput = Input.GetAxisRaw("Horizontal");
+        _verticalInput = Input.GetAxisRaw("Vertical");
+        /*Debug.Log(Input.GetKey(jumpKey) && readyToJump && grounded);
         Debug.Log("jumpKey: " + Input.GetKey(jumpKey));
         Debug.Log("readyToJump: " + readyToJump );
-        Debug.Log("grounded: " + grounded);
-        if (Input.GetKey(jumpKey) && readyToJump && grounded)
+        Debug.Log("grounded: " + grounded);*/
+        if (Input.GetKey(jumpKey) && _readyToJump && _grounded)
         {
-            readyToJump = false;
+            _readyToJump = false;
             Jump();
             Invoke(nameof(ResetJump), jumpCooldown);
         }
@@ -70,35 +70,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        _moveDirection = orientation.forward * _verticalInput + orientation.right * _horizontalInput;
         
-        if (grounded) 
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
-        else if (!grounded) 
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
+        if (_grounded) 
+            _rb.AddForce(_moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        else if (!_grounded) 
+            _rb.AddForce(_moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
     }
 
     private void SpeedControl()
     {
-        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        Vector3 flatVel = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
 
         if (flatVel.magnitude > moveSpeed)
         {
             Vector3 limitedVel = flatVel.normalized * moveSpeed;
-            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+            _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
         }
     }
 
     private void Jump()
     {
-        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
         
-        rb.AddForce(transform.up  * jumpForce, ForceMode.Impulse);
+        _rb.AddForce(transform.up  * jumpForce, ForceMode.Impulse);
         
     }
 
     private void ResetJump()
     {
-        readyToJump = true;
+        _readyToJump = true;
     }
 }
