@@ -1,6 +1,8 @@
 using UnityEngine;
+using Unity.Netcode;
+using Unity.VisualScripting;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     [Header("Movement")] public float moveSpeed;
     public Transform orientation;
@@ -26,14 +28,28 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody _rb;
 
+    public Camera FirstPersonCamera;
+    // for Camera Control
+    private float xRotation;
+    private float yRotation;
+    public float sensX;
+    public float sensY;
+    public Transform CameraOrientation;
+    
     private void Start()
     {
+        if (IsLocalPlayer)
+        {
+            FirstPersonCamera.GameObject().SetActive(true);
+        }
         _rb = GetComponent<Rigidbody>();
         _rb.freezeRotation = true;
     }
 
     private void Update()
     {
+        if (!IsOwner) return;
+        CameraControl(FirstPersonCamera);
         _grounded = Physics.Raycast(
             transform.position, Vector3.down,
             playerHeight * 0.5f + 0.2f, whatIsGround
@@ -47,8 +63,21 @@ public class PlayerMovement : MonoBehaviour
             _rb.drag = 0;
     }
 
+    private void CameraControl(Camera camera)
+    {
+        float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX;
+        float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY;
+        Debug.Log($"{mouseX}, {mouseY}");
+        yRotation += mouseX;
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+                
+        camera.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+        CameraOrientation.rotation = Quaternion.Euler(0, yRotation, 0);
+    }
     private void FixedUpdate()
     {
+        if (!IsOwner) return;
         MovePlayer();
     }
 
