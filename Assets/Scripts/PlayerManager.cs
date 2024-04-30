@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,7 +8,6 @@ namespace Core.Singletons
     public class PlayersManager : NetworkSingleton<PlayersManager>
     {
         private NetworkVariable<int> playersInGame = new NetworkVariable<int>();
-
         public int PlayersInGame
         {
             get

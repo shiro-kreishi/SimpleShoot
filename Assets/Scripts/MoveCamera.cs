@@ -8,7 +8,7 @@ public class MoveCamera : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
-        Debug.Log(cameraPosition.position);
+        // Debug.Log(cameraPosition.position);
         if (IsLocalPlayer)
             transform.position = cameraPosition.position;
     }
