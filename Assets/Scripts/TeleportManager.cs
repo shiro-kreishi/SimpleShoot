@@ -9,25 +9,30 @@ namespace Core.Singletons
         [SerializeField] private List<Transform> transforms;
         private NetworkVariable<Vector3> pointPosition = new NetworkVariable<Vector3>();
         private NetworkVariable<Vector3> playerPosition = new NetworkVariable<Vector3>();
-
+        
         public void TeleportPlayer(Transform transform)
         {
-            System.Random rnd = new System.Random();
-            int rand = rnd.Next(transforms.Count);
-            if (IsServer)
-            {
-               pointPosition.Value = transforms[rand].position;
-               playerPosition.Value = transform.position;
-               TeleportToPointServerRpc();
-               
-            }
+            // var rnd = Random.Range(0, transforms.Count);
+            // if (IsServer)
+            // {
+            //    // pointPosition.Value = transforms[rnd].position;
+            //    // playerPosition.Value = transform.position;
+            //    TeleportToPointServerRpc();
+            //    
+            // }
+            TeleportToPointServerRpc();
             transform.position = playerPosition.Value;
+            
+            
         }
 
         [ServerRpc]
         void TeleportToPointServerRpc()
         {
-            playerPosition.Value = pointPosition.Value;
+            var rnd = Random.Range(0, transforms.Count);
+            playerPosition.Value = transforms[rnd].position;
+            
+            // playerPosition.Value = pointPosition.Value;
         }
     }
 }
