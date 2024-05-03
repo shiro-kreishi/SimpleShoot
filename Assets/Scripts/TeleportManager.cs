@@ -22,8 +22,6 @@ namespace Core.Singletons
             // }
             TeleportToPointServerRpc();
             transform.position = playerPosition.Value;
-            
-            
         }
 
         [ServerRpc]

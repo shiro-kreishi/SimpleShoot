@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - col1
+  - command1
+  - command2
   layers:
   - Default
   - TransparentFX

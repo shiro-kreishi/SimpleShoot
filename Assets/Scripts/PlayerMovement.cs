@@ -126,6 +126,11 @@ public class PlayerMovement : NetworkBehaviour
         
     }
 
+    public void test123()
+    {
+        Debug.Log("gvbjkweab");
+    }
+
     private void ResetJump()
     {
         _readyToJump = true;
