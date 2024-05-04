@@ -42,17 +42,18 @@ namespace Core.Singletons
             // Player connected to server 
             Debug.Log("teleport..."); 
             TeleportUsersToPointsServerRpc(userId, chooseCommand); 
-            TeleportPlayerServerRpc(userId);
-            // if(IsServer)
-            //     transform.position = _playerPosition.Value;
-            // else
-            // {
-            //     TeleportToPointServerRpc();
-            //     //TeleportToPointClientRpc();
-            //     transform.position = _playerPosition.Value;
-            //     Debug.Log($"client transform: {_playerPosition.Value}");
-            //     Debug.Log($"player position: {transform.position}");
-            // }
+            // TeleportPlayerServerRpc(userId);
+            if(IsServer)
+                // transform.position = _playerPosition.Value;
+                TestTeleportClientRpc(_pointPosition.Value);
+            else
+            {
+                TeleportToPointServerRpc();
+                //TeleportToPointClientRpc();
+                transform.position = _playerPosition.Value;
+                Debug.Log($"client transform: {_playerPosition.Value}");
+                Debug.Log($"player position: {transform.position}");
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -71,6 +72,13 @@ namespace Core.Singletons
                     player.transform.position = _pointPosition.Value;
                 }
             }
+        }
+
+        [ClientRpc]
+        void TestTeleportClientRpc(Vector3 point)
+        {
+            Debug.Log("clientrpc");
+            transform.position = point;
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -98,8 +106,9 @@ namespace Core.Singletons
                         chooseCommand == 2 ? teleportPositionFromCommand2 : teleportPositionFromCommand1;
                     _pointPosition.Value = position[i].position;
                     //TeleportToPointServerRpc();
-                    TeleportPlayerServerRpc(id);
-                    playerObj.gameObject.transform.position = position[i].position;
+                    // TeleportPlayerServerRpc(id);
+                    TestTeleportClientRpc(position[i].position);
+                    // playerObj.gameObject.transform.position = position[i].position;
                     Debug.Log($"position: {position[i].position}");
                     Debug.Log($"player position: {playerObj.gameObject.transform.position}");
                     break;
