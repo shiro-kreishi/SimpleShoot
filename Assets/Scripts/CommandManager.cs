@@ -43,10 +43,12 @@ namespace Core.Singletons
             TeleportUsersToPointsServerRpc(userId, chooseCommand); 
             if(IsServer)
                 transform.position = _playerPosition.Value;
-            else
+            if (IsOwner)
             {
                 TeleportToPointServerRpc();
+                //TeleportToPointClientRpc();
                 transform.position = _playerPosition.Value;
+                Debug.Log($"client transform: {_playerPosition.Value}");
             }
         }
 
@@ -54,6 +56,14 @@ namespace Core.Singletons
         void TeleportToPointServerRpc()
         {
             _playerPosition.Value = _pointPosition.Value;
+        }
+        
+        [ClientRpc]
+        void TeleportToPointClientRpc()
+        {
+            _playerPosition.Value = _pointPosition.Value;
+            transform.position = _playerPosition.Value;
+            Debug.Log("teleporting player...");
         }
 
         [ServerRpc(RequireOwnership = false)]
