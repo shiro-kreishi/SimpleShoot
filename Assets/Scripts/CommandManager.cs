@@ -3,16 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Core.Singletons
 {
     public class CommandManager : NetworkSingleton<CommandManager>
     {
-        public List<ulong> Command1;
-        public List<ulong> Command2;
+        [FormerlySerializedAs("Command1")] public List<ulong> command1;
+        [FormerlySerializedAs("Command2")] public List<ulong> command2;
 
-        public List<Transform> TeleportPositionFromCommand1;
-        public List<Transform> TeleportPositionFromCommand2;
+        [FormerlySerializedAs("TeleportPositionFromCommand1")] public List<Transform> teleportPositionFromCommand1;
+        [FormerlySerializedAs("TeleportPositionFromCommand2")] public List<Transform> teleportPositionFromCommand2;
 
         private List<bool> _teleportCommand1 = new List<bool>(100);
         private List<bool> _teleportCommand2 = new List<bool>(100);
@@ -26,9 +27,9 @@ namespace Core.Singletons
 
         private void Start()
         {
-            for (int i = 0; i < TeleportPositionFromCommand1.Count; ++i)
+            for (int i = 0; i < teleportPositionFromCommand1.Count; ++i)
                 _teleportCommand1.Add(false);
-            for (int i = 0; i < TeleportPositionFromCommand2.Count; ++i)
+            for (int i = 0; i < teleportPositionFromCommand2.Count; ++i)
                 _teleportCommand2.Add(false);
         }
 
@@ -41,15 +42,17 @@ namespace Core.Singletons
             // Player connected to server 
             Debug.Log("teleport..."); 
             TeleportUsersToPointsServerRpc(userId, chooseCommand); 
-            if(IsServer)
-                transform.position = _playerPosition.Value;
-            if (IsOwner)
-            {
-                TeleportToPointServerRpc();
-                //TeleportToPointClientRpc();
-                transform.position = _playerPosition.Value;
-                Debug.Log($"client transform: {_playerPosition.Value}");
-            }
+            TeleportPlayerServerRpc(userId);
+            // if(IsServer)
+            //     transform.position = _playerPosition.Value;
+            // else
+            // {
+            //     TeleportToPointServerRpc();
+            //     //TeleportToPointClientRpc();
+            //     transform.position = _playerPosition.Value;
+            //     Debug.Log($"client transform: {_playerPosition.Value}");
+            //     Debug.Log($"player position: {transform.position}");
+            // }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -58,25 +61,29 @@ namespace Core.Singletons
             _playerPosition.Value = _pointPosition.Value;
         }
         
-        [ClientRpc]
-        void TeleportToPointClientRpc()
+        [ServerRpc(RequireOwnership = false)]
+        public void TeleportPlayerServerRpc(ulong clientID)
         {
-            _playerPosition.Value = _pointPosition.Value;
-            transform.position = _playerPosition.Value;
-            Debug.Log("teleporting player...");
+            foreach (var player in GameObject.FindObjectsOfType<NetworkObject>())
+            {
+                if (player.OwnerClientId == clientID)
+                {
+                    player.transform.position = _pointPosition.Value;
+                }
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
         void TeleportUsersToPointsServerRpc(ulong id, byte chooseCommand)
         {
-            var sizeTeleportPositionFromCommand = chooseCommand == 1 ? TeleportPositionFromCommand1.Count :
-                chooseCommand == 2 ? TeleportPositionFromCommand2.Count : TeleportPositionFromCommand1.Count;
+            var sizeTeleportPositionFromCommand = chooseCommand == 1 ? teleportPositionFromCommand1.Count :
+                chooseCommand == 2 ? teleportPositionFromCommand2.Count : teleportPositionFromCommand1.Count;
             Debug.Log($"sizeTeleportPositionFromCommand: {sizeTeleportPositionFromCommand}");
             // _serverUser.Value = NetworkManager.Singleton.ConnectedClients[id].PlayerObject;
             var playerObj = NetworkManager.Singleton.ConnectedClients[id].PlayerObject;
             Debug.Log(playerObj.NetworkObjectId);
-            var sizeCommand = chooseCommand==1 ? Command1.Count :
-                chooseCommand==2 ? Command2.Count : Command1.Count;
+            var sizeCommand = chooseCommand==1 ? command1.Count :
+                chooseCommand==2 ? command2.Count : command1.Count;
             Debug.Log($"sizeCommand: {sizeCommand}");
             var teleport = chooseCommand == 1 ? _teleportCommand1 :
                 chooseCommand == 2 ? _teleportCommand2 : _teleportCommand1;
@@ -87,10 +94,11 @@ namespace Core.Singletons
                 {
                     teleport[i] = !teleport[i];
                     _playerPosition.Value = playerObj.transform.position;
-                    var position = chooseCommand == 1 ? TeleportPositionFromCommand1 :
-                        chooseCommand == 2 ? TeleportPositionFromCommand2 : TeleportPositionFromCommand1;
+                    var position = chooseCommand == 1 ? teleportPositionFromCommand1 :
+                        chooseCommand == 2 ? teleportPositionFromCommand2 : teleportPositionFromCommand1;
                     _pointPosition.Value = position[i].position;
-                    TeleportToPointServerRpc();
+                    //TeleportToPointServerRpc();
+                    TeleportPlayerServerRpc(id);
                     playerObj.gameObject.transform.position = position[i].position;
                     Debug.Log($"position: {position[i].position}");
                     Debug.Log($"player position: {playerObj.gameObject.transform.position}");
@@ -104,11 +112,11 @@ namespace Core.Singletons
         {
             if (chooseCommand == 1)
             {
-                Command1.Add(userId);
+                command1.Add(userId);
             }
             else if (chooseCommand == 2)
             {
-                Command2.Add(userId);
+                command2.Add(userId);
             }
         }
     }
