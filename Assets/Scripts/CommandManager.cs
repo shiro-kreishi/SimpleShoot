@@ -43,17 +43,13 @@ namespace Core.Singletons
             Debug.Log("teleport..."); 
             TeleportUsersToPointsServerRpc(userId, chooseCommand); 
             // TeleportPlayerServerRpc(userId);
-            if(IsServer)
-                // transform.position = _playerPosition.Value;
-                TestTeleportClientRpc(_pointPosition.Value);
-            else
-            {
-                TeleportToPointServerRpc();
-                //TeleportToPointClientRpc();
-                transform.position = _playerPosition.Value;
-                Debug.Log($"client transform: {_playerPosition.Value}");
-                Debug.Log($"player position: {transform.position}");
-            }
+            TestTeleportClientRpc(_pointPosition.Value);
+            TeleportToPointServerRpc();
+            //TeleportToPointClientRpc();
+            transform.position = _playerPosition.Value;
+            Debug.Log($"client transform: {_playerPosition.Value}");
+            Debug.Log($"player position: {transform.position}");
+            
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -108,7 +104,7 @@ namespace Core.Singletons
                     //TeleportToPointServerRpc();
                     // TeleportPlayerServerRpc(id);
                     TestTeleportClientRpc(position[i].position);
-                    // playerObj.gameObject.transform.position = position[i].position;
+                    playerObj.gameObject.transform.position = position[i].position;
                     Debug.Log($"position: {position[i].position}");
                     Debug.Log($"player position: {playerObj.gameObject.transform.position}");
                     break;
